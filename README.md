@@ -2,6 +2,10 @@
 
 Next.js (App Router) frontend + FastAPI backend.
 
+## Demo
+
+[Screen recording](https://drive.google.com/file/d/1HgbYIyh1D0s-c4PefOYCrSYQO81DKSfl/view?usp=sharing) walking through the app end to end: submitting a lead through the public form, the confirmation/notification emails, logging in as an attorney, and marking a lead as reached out from the dashboard.
+
 ## Getting Started
 
 **Quickest: backend + frontend together**
