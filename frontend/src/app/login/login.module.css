@@ -1,0 +1,151 @@
+.page {
+  --background: #fafafa;
+  --foreground: #fff;
+
+  --text-primary: #000;
+  --text-secondary: #666;
+
+  --border: #ebebeb;
+  --error: #d92d20;
+
+  --button-primary: #000;
+  --button-primary-hover: #383838;
+  --button-disabled: #999;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-sans);
+  background-color: var(--background);
+}
+
+.main {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+  flex-direction: column;
+  background-color: var(--foreground);
+  padding: 80px 40px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form h1 {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -1.6px;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin-top: -12px;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--text-secondary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.field input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background-color: var(--foreground);
+}
+
+.field input:focus {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 1px;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--error);
+}
+
+.formError {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background-color: rgba(217, 45, 32, 0.08);
+  color: var(--error);
+  font-size: 14px;
+}
+
+.submit {
+  height: 44px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 128px;
+  background-color: var(--button-primary);
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.submit:disabled {
+  background-color: var(--button-disabled);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .submit:not(:disabled):hover {
+    background-color: var(--button-primary-hover);
+  }
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: 48px 24px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    --background: #000;
+    --foreground: #000;
+
+    --text-primary: #ededed;
+    --text-secondary: #999;
+
+    --border: #2a2a2a;
+    --error: #ff6a5c;
+
+    --button-primary: #ededed;
+    --button-primary-hover: #ccc;
+    --button-disabled: #444;
+  }
+
+  .submit {
+    color: #000;
+  }
+
+  .formError {
+    background-color: rgba(255, 106, 92, 0.12);
+  }
+}
