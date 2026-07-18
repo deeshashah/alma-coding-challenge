@@ -16,12 +16,18 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESUME_ACCEPT =
   ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-function validateClientSide(formData: FormData): ClientErrors {
+// Reads straight from the form's live DOM elements rather than snapshotting
+// via `new FormData(form)`: on a form that also has a React 19 `action`
+// prop, a FormData snapshot taken inside a plain onSubmit handler can come
+// back with an empty (0-byte) file entry even though `input.files` on the
+// element itself is populated correctly. Reading elements directly
+// sidesteps that entirely.
+function validateClientSide(form: HTMLFormElement): ClientErrors {
   const errors: ClientErrors = {};
-  const firstName = String(formData.get("firstName") ?? "").trim();
-  const lastName = String(formData.get("lastName") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const resume = formData.get("resume");
+  const firstName = (form.elements.namedItem("firstName") as HTMLInputElement | null)?.value.trim() ?? "";
+  const lastName = (form.elements.namedItem("lastName") as HTMLInputElement | null)?.value.trim() ?? "";
+  const email = (form.elements.namedItem("email") as HTMLInputElement | null)?.value.trim() ?? "";
+  const resume = (form.elements.namedItem("resume") as HTMLInputElement | null)?.files?.[0];
 
   if (!firstName) errors.firstName = "First name is required.";
   if (!lastName) errors.lastName = "Last name is required.";
@@ -51,11 +57,7 @@ export default function ApplyForm() {
   const [clientErrors, setClientErrors] = useState<ClientErrors>({});
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    const fd = new FormData(event.currentTarget);
-    const r = fd.get("resume") as File;
-    console.log("DEBUG resume name/size/instanceof", r?.name, r?.size, r instanceof File);
-    const errors = validateClientSide(fd);
-    console.log("DEBUG errors=", errors);
+    const errors = validateClientSide(event.currentTarget);
     setClientErrors(errors);
     if (Object.keys(errors).length > 0) {
       event.preventDefault();

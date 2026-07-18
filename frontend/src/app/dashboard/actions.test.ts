@@ -13,7 +13,6 @@ vi.mock("next/cache", () => ({
 }));
 
 const { markReachedOut } = await import("./actions");
-const { SESSION_COOKIE_NAME } = await import("@/lib/session");
 
 const lead = {
   id: "lead-1",

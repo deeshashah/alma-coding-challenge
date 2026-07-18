@@ -54,7 +54,13 @@ describe("ApplyForm", () => {
   });
 
   it("flags a resume with a disallowed extension client-side", async () => {
-    const user = userEvent.setup();
+    // applyAccept: false bypasses user-event's simulation of the native file
+    // picker filtering by the input's `accept` attribute -- the input's
+    // `accept` is only a picker hint (a user can still attach a mismatched
+    // file via drag-and-drop, or a picker that allows "All Files"), so the
+    // app has its own explicit fallback validation for this case, which is
+    // exactly what this test exercises.
+    const user = userEvent.setup({ applyAccept: false });
     render(<ApplyForm />);
 
     await user.type(screen.getByLabelText("First name"), "Ada");
