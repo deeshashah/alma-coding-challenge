@@ -1,7 +1,7 @@
 import re
 import uuid
 
-from lead_service import UPLOAD_DIR
+from services.lead_service import UPLOAD_DIR
 
 
 def _post_lead(client, dummy_resume_path, **overrides):

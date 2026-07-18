@@ -55,18 +55,61 @@ Visit http://localhost:3000 — it server-renders a call to the backend's
 
 ## Development
 
-Backend layering — routes / control logic / models are kept in separate modules:
+### Folder structure
+
+```
+backend/
+  main.py                  # composition root: FastAPI app, middleware, router
+                            # registration, table creation + attorney seeding
+  database.py               # SQLAlchemy engine/session setup
+  models.py                 # SQLAlchemy models (Lead, LeadState, User)
+  schemas.py                 # Pydantic response models (camelCase JSON)
+  validators.py               # reusable request/file validation
+  routers/                    # HTTP layer — thin: parse, validate, delegate
+    leads.py
+    auth.py
+  services/                   # control logic — the actual business rules
+    lead_service.py
+    auth_service.py
+    email_service.py
+  tests/
+
+frontend/src/
+  app/
+    page.tsx                 # homepage
+    apply/                    # public lead-intake form + its tests
+    login/                    # attorney login + its tests
+    dashboard/                 # auth-protected leads table + its tests
+  lib/session.ts               # session cookie helpers
+  middleware.ts                 # gates /dashboard/:path* on the session cookie
+  test-utils/
+```
+
+Frontend is organized by route under `app/` (Next.js App Router requires
+`page.tsx` to live directly in `app/<route>/`, so this grouping is the
+framework's own convention, not a bespoke choice) — each route folder owns
+its `page.tsx`, Server Actions (`actions.ts`), client component, and tests
+together, rather than splitting by file type.
+
+Backend used to be 10 `.py` files flat in `backend/`; `routers/` and
+`services/` now separate the HTTP layer from the business logic that used to
+just be file-naming conventions (`leads.py` vs `lead_service.py`) into real
+folders. `main.py`/`database.py`/`models.py`/`schemas.py`/`validators.py`
+stay flat since each is a single, distinct concern with nothing else of its
+kind to group it with.
+
+### What's in each layer
 
 - `backend/main.py` — FastAPI app entrypoint; composition root (middleware, static mounts, exception handlers, router registration, table creation + attorney seeding on startup).
 - `backend/database.py` — SQLAlchemy engine/session setup (`DATABASE_URL` env var, defaults to `sqlite:///./alma.db`).
 - `backend/models.py` — SQLAlchemy models (`Lead`, `LeadState`, `User`).
 - `backend/schemas.py` — Pydantic response models, camelCase JSON per `docs/SYSTEM_DESIGN.md` (`LeadOut`, `LeadListOut`, `LeadStateUpdate`, `LoginRequest`, `LoginResponse`, `UserOut`).
 - `backend/validators.py` — reusable request/file validation (required fields, resume type/size, Content-Length precheck).
-- `backend/leads.py` — routes for `/api/leads*` (thin: parse + validate + delegate).
-- `backend/lead_service.py` — control logic for leads: writes resumes to `UPLOAD_DIR` (env var, defaults to `backend/uploads/resumes/`), persists/queries/updates `Lead` rows. Every submission creates a new lead (no dedupe by email — see `docs/SYSTEM_DESIGN.md` for the tradeoff). `update_lead_state` uses a single atomic conditional `UPDATE` (not read-then-write) so two concurrent PATCH requests can't both win a state transition.
-- `backend/email_service.py` — `EmailSender` abstraction: `ConsoleEmailSender` (default, logs to console — for local dev), `SMTPEmailSender`, and `ResendEmailSender` (real HTTP API, stdlib `urllib` only, no SDK), selected via `get_email_sender()`. `send_with_retry()` wraps any sender with retry-with-backoff (3 attempts) and failure logging. Notification emails are scheduled via FastAPI `BackgroundTasks` from the `POST /api/leads` route, not sent on the request path.
-- `backend/auth.py` — route for `POST /api/auth/login` (thin).
-- `backend/auth_service.py` — control logic for auth: password hashing (bcrypt), JWT issuing/verification (PyJWT, HS256), `authenticate_attorney`, the reusable `get_current_attorney` dependency, and `seed_attorney_from_env`.
+- `backend/routers/leads.py` — routes for `/api/leads*` (thin: parse + validate + delegate).
+- `backend/services/lead_service.py` — control logic for leads: writes resumes to `UPLOAD_DIR` (env var, defaults to `backend/uploads/resumes/`), persists/queries/updates `Lead` rows. Every submission creates a new lead (no dedupe by email — see `docs/SYSTEM_DESIGN.md` for the tradeoff). `update_lead_state` uses a single atomic conditional `UPDATE` (not read-then-write) so two concurrent PATCH requests can't both win a state transition.
+- `backend/services/email_service.py` — `EmailSender` abstraction: `ConsoleEmailSender` (default, logs to console — for local dev), `SMTPEmailSender`, and `ResendEmailSender` (real HTTP API, stdlib `urllib` only, no SDK), selected via `get_email_sender()`. `send_with_retry()` wraps any sender with retry-with-backoff (3 attempts) and failure logging. Notification emails are scheduled via FastAPI `BackgroundTasks` from the `POST /api/leads` route, not sent on the request path.
+- `backend/routers/auth.py` — route for `POST /api/auth/login` (thin).
+- `backend/services/auth_service.py` — control logic for auth: password hashing (bcrypt), JWT issuing/verification (PyJWT, HS256), `authenticate_attorney`, the reusable `get_current_attorney` dependency, and `seed_attorney_from_env`.
 - `frontend/src/app/page.tsx` — homepage; links applicants to `/apply` and attorneys to `/login` or `/dashboard` (whichever applies, checked via the session cookie), plus a live `API_URL` health-status indicator.
 - `frontend/src/app/apply/` — public lead-intake form (`POST /api/leads`), client + server-surfaced validation, success state.
 - `frontend/src/app/login/` — attorney login (`POST /api/auth/login`); stores the returned JWT in an httpOnly session cookie (never in localStorage) and redirects to `/dashboard` (or wherever `/login?from=` pointed) on success.

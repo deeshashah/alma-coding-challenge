@@ -10,12 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from auth import router as auth_router
-from auth_service import seed_attorney_from_env
 from database import Base, SessionLocal, engine
-from lead_service import UPLOAD_DIR
-from leads import router as leads_router
 from models import Lead, User  # noqa: F401 — registers Lead/User on Base.metadata
+from routers.auth import router as auth_router
+from routers.leads import router as leads_router
+from services.auth_service import seed_attorney_from_env
+from services.lead_service import UPLOAD_DIR
 from validators import validate_content_length
 
 

@@ -7,8 +7,8 @@ from pathlib import Path
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from email_service import get_email_sender, send_with_retry
 from models import Lead, LeadState
+from services.email_service import get_email_sender, send_with_retry
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 """Integration test: creating a lead via POST /api/leads triggers confirmation/notification emails."""
 
-import lead_service
+import services.lead_service as lead_service
 
 
 class _RecordingEmailSender:
@@ -66,7 +66,7 @@ def test_create_lead_falls_back_to_default_attorney_email(client, dummy_resume_p
 
 def test_create_lead_succeeds_even_when_email_sending_fails(client, dummy_resume_path, monkeypatch):
     """A failing email backend does not prevent the lead from being created successfully."""
-    import email_service
+    import services.email_service as email_service
 
     class _ExplodingSender:
         """Fake EmailSender whose send() always raises, simulating a delivery failure."""

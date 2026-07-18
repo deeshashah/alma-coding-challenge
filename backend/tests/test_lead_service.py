@@ -5,7 +5,7 @@ from models import LeadState
 
 def test_create_lead_writes_file_and_persists_row(app, db_session, dummy_resume_path):
     """create_lead() writes the resume to UPLOAD_DIR and inserts a matching PENDING row."""
-    from lead_service import UPLOAD_DIR, create_lead
+    from services.lead_service import UPLOAD_DIR, create_lead
 
     lead_id = uuid.uuid4()
     filename = f"{lead_id}.pdf"

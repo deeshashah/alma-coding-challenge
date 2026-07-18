@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from auth_service import authenticate_attorney, create_access_token
 from database import get_db
 from schemas import LoginRequest, LoginResponse
+from services.auth_service import authenticate_attorney, create_access_token
 
 router = APIRouter()
 

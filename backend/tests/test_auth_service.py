@@ -3,7 +3,8 @@ import uuid
 import pytest
 from fastapi import HTTPException
 
-from auth_service import (
+from models import User
+from services.auth_service import (
     authenticate_attorney,
     create_access_token,
     decode_access_token,
@@ -12,7 +13,6 @@ from auth_service import (
     seed_attorney_from_env,
     verify_password,
 )
-from models import User
 
 
 def _make_user(db_session, *, email=None, password="correct-horse", name="Ada"):

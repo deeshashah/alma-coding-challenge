@@ -5,7 +5,7 @@ import urllib.error
 
 import pytest
 
-from email_service import (
+from services.email_service import (
     ConsoleEmailSender,
     ResendEmailSender,
     SMTPEmailSender,
@@ -18,7 +18,7 @@ def test_console_email_sender_logs_email_contents(caplog):
     """ConsoleEmailSender.send() logs the recipient, subject, and body instead of sending."""
     sender = ConsoleEmailSender()
 
-    with caplog.at_level(logging.INFO, logger="email_service"):
+    with caplog.at_level(logging.INFO, logger="services.email_service"):
         sender.send(to="prospect@example.com", subject="Hello", body="Welcome aboard.")
 
     assert len(caplog.records) == 1
@@ -113,7 +113,7 @@ class _FakeSMTP:
 def test_smtp_email_sender_send_uses_smtplib(monkeypatch):
     """SMTPEmailSender.send() opens an SMTP connection, does STARTTLS/login, and sends the message."""
     _FakeSMTP.instances = []
-    monkeypatch.setattr("email_service.smtplib.SMTP", _FakeSMTP)
+    monkeypatch.setattr("services.email_service.smtplib.SMTP", _FakeSMTP)
 
     sender = SMTPEmailSender(
         host="smtp.example.com",
@@ -145,7 +145,7 @@ def test_smtp_email_sender_send_propagates_errors(monkeypatch):
             """Simulate an SMTP failure when attempting STARTTLS."""
             raise OSError("connection refused")
 
-    monkeypatch.setattr("email_service.smtplib.SMTP", _ExplodingSMTP)
+    monkeypatch.setattr("services.email_service.smtplib.SMTP", _ExplodingSMTP)
 
     sender = SMTPEmailSender(host="smtp.example.com")
 
@@ -191,7 +191,7 @@ def test_resend_email_sender_send_posts_expected_payload(monkeypatch):
         captured["timeout"] = timeout
         return _FakeHTTPResponse()
 
-    monkeypatch.setattr("email_service.urllib.request.urlopen", _fake_urlopen)
+    monkeypatch.setattr("services.email_service.urllib.request.urlopen", _fake_urlopen)
 
     sender = ResendEmailSender(api_key="re_test_key", from_address="noreply@example.com")
     sender.send(to="someone@example.com", subject="Subject", body="Body text")
@@ -226,7 +226,7 @@ def test_resend_email_sender_send_raises_on_http_error(monkeypatch):
             ResendEmailSender.API_URL, 401, "Unauthorized", {}, None
         )
 
-    monkeypatch.setattr("email_service.urllib.request.urlopen", _fake_urlopen)
+    monkeypatch.setattr("services.email_service.urllib.request.urlopen", _fake_urlopen)
 
     sender = ResendEmailSender(api_key="bad_key", from_address="noreply@example.com")
 
@@ -251,7 +251,7 @@ class _CountingSender:
 
 def test_send_with_retry_succeeds_on_first_attempt(monkeypatch):
     """send_with_retry returns True and doesn't sleep when the first attempt succeeds."""
-    monkeypatch.setattr("email_service.time.sleep", lambda _seconds: pytest.fail("should not sleep"))
+    monkeypatch.setattr("services.email_service.time.sleep", lambda _seconds: pytest.fail("should not sleep"))
     sender = _CountingSender(fail_times=0)
 
     result = send_with_retry(sender, to="x@example.com", subject="s", body="b")
@@ -263,7 +263,7 @@ def test_send_with_retry_succeeds_on_first_attempt(monkeypatch):
 def test_send_with_retry_succeeds_after_transient_failures(monkeypatch):
     """send_with_retry retries on failure and returns True once a later attempt succeeds."""
     sleeps = []
-    monkeypatch.setattr("email_service.time.sleep", lambda seconds: sleeps.append(seconds))
+    monkeypatch.setattr("services.email_service.time.sleep", lambda seconds: sleeps.append(seconds))
     sender = _CountingSender(fail_times=2)
 
     result = send_with_retry(
@@ -278,10 +278,10 @@ def test_send_with_retry_succeeds_after_transient_failures(monkeypatch):
 
 def test_send_with_retry_gives_up_after_max_attempts(monkeypatch, caplog):
     """send_with_retry returns False and logs a final error once every attempt is exhausted."""
-    monkeypatch.setattr("email_service.time.sleep", lambda _seconds: None)
+    monkeypatch.setattr("services.email_service.time.sleep", lambda _seconds: None)
     sender = _CountingSender(fail_times=99)
 
-    with caplog.at_level(logging.WARNING, logger="email_service"):
+    with caplog.at_level(logging.WARNING, logger="services.email_service"):
         result = send_with_retry(
             sender, to="x@example.com", subject="s", body="b", max_attempts=3
         )

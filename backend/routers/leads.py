@@ -16,9 +16,11 @@ from fastapi import (
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
-from auth_service import get_current_attorney
 from database import get_db
-from lead_service import (
+from models import Lead, LeadState, User
+from schemas import LeadListOut, LeadOut, LeadStateUpdate
+from services.auth_service import get_current_attorney
+from services.lead_service import (
     InvalidStateTransitionError,
     LeadStateConflictError,
     create_lead,
@@ -27,8 +29,6 @@ from lead_service import (
     notify_lead_created,
     update_lead_state,
 )
-from models import Lead, LeadState, User
-from schemas import LeadListOut, LeadOut, LeadStateUpdate
 from validators import validate_required_text, validate_resume_size, validate_resume_type
 
 router = APIRouter()

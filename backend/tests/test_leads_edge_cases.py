@@ -1,7 +1,7 @@
 import uuid
 
-from auth_service import create_access_token, hash_password
 from models import User
+from services.auth_service import create_access_token, hash_password
 
 
 def _make_user(db_session, *, email=None, password="correct-horse", name="Ada"):
